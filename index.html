@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الكرات المتساقطة - أنواع الأسماء</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .stars-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: twinkle 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        .login-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 300;
+            backdrop-filter: blur(10px);
+            min-width: 300px;
+        }
+        
+        .login-screen h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            text-align: center;
+            outline: none;
+        }
+        
+        .login-input:focus {
+            border-color: #2a5298;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .start-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #2a5298;
+        }
+        
+        .player-name {
+            font-size: 1rem;
+            color: #667eea;
+            margin: 5px 0;
+        }
+        
+        .game-info {
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+
+        
+        .info-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px 16px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .score {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #28a745;
+            margin: 0;
+        }
+        
+        .timer {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin: 0;
+        }
+        
+        .target-type {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0;
+        }
+        
+        .level-timer {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #feca57;
+            margin: 0;
+        }
+        
+        .falling-star {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            animation: fall linear;
+            z-index: 10;
+        }
+        
+        .falling-star:hover {
+            transform: scale(1.1);
+        }
+        
+        .star-person { background: linear-gradient(45deg, #ff6b6b, #ff8e8e); }
+        .star-animal { background: linear-gradient(45deg, #28a745, #20c997); }
+        .star-plant { background: linear-gradient(45deg, #feca57, #ff9ff3); }
+        .star-thing { background: linear-gradient(45deg, #667eea, #764ba2); }
+        .star-country { background: linear-gradient(45deg, #e83e8c, #fd7e14); }
+        
+        @keyframes fall {
+            from {
+                top: -80px;
+            }
+            to {
+                top: 100vh;
+            }
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            display: none;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+        }
+        
+        .game-over.show {
+            display: block;
+            animation: popIn 0.5s ease-out;
+        }
+        
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        .final-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .leaderboard {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .leaderboard h3 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        .leader-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .leader-item:last-child {
+            border-bottom: none;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        .share-btn {
+            background: #1877f2;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .share-btn:hover {
+            background: #166fe5;
+            transform: translateY(-2px);
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #495057;
+            z-index: 100;
+        }
+        
+        .explosion {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            animation: explode 0.6s ease-out;
+            pointer-events: none;
+            z-index: 30;
+        }
+        
+        .explosion.correct {
+            background: radial-gradient(circle, #28a745, #20c997, transparent);
+        }
+        
+        .explosion.incorrect {
+            background: radial-gradient(circle, #dc3545, #ff6b6b, transparent);
+        }
+        
+        @keyframes explode {
+            from {
+                transform: scale(0);
+                opacity: 1;
+            }
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .header {
+                padding: 12px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .game-info {
+                top: 130px;
+                left: 15px;
+                right: 15px;
+                gap: 8px;
+            }
+            
+            .info-card {
+                padding: 10px 14px;
+                min-width: 90px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .login-screen {
+                margin: 15px;
+                min-width: auto;
+                width: calc(100% - 30px);
+                padding: 30px 25px;
+            }
+            
+            .login-screen h2 {
+                font-size: 1.5rem;
+            }
+            
+            .header {
+                top: 15px;
+                padding: 10px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.1rem;
+            }
+            
+            .player-name {
+                font-size: 0.9rem;
+            }
+            
+            .game-info {
+                top: 120px;
+                left: 10px;
+                right: 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .info-card {
+                min-width: 70px;
+                padding: 8px 10px;
+                font-size: 0.85rem;
+                flex: 0 1 calc(50% - 4px);
+            }
+            
+            .score, .timer, .target-type, .level-timer {
+                font-size: 1.1rem;
+            }
+            
+            .falling-star {
+                width: 55px;
+                height: 55px;
+                font-size: 0.7rem;
+            }
+            
+            .instructions {
+                bottom: 15px;
+                left: 10px;
+                right: 10px;
+                transform: none;
+                font-size: 0.8rem;
+                padding: 8px 15px;
+            }
+            
+            .game-over {
+                margin: 15px;
+                max-width: calc(100% - 30px);
+                padding: 30px 25px;
+            }
+            
+            .final-score {
+                font-size: 1.7rem;
+            }
+            
+            .restart-btn, .share-btn {
+                padding: 12px 25px;
+                font-size: 1.1rem;
+                margin: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .login-screen {
+                margin: 10px;
+                width: calc(100% - 20px);
+                padding: 25px 20px;
+            }
+            
+            .login-screen h2 {
+                font-size: 1.3rem;
+            }
+            
+            .header {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                transform: none;
+                padding: 8px 12px;
+            }
+            
+            .header h1 {
+                font-size: 1rem;
+            }
+            
+            .game-info {
+                top: 100px;
+                left: 5px;
+                right: 5px;
+                gap: 5px;
+            }
+            
+            .info-card {
+                min-width: 60px;
+                padding: 6px 8px;
+                font-size: 0.8rem;
+                flex: 0 1 calc(50% - 2.5px);
+            }
+            
+            .score, .timer, .target-type, .level-timer {
+                font-size: 1rem;
+            }
+            
+            .falling-star {
+                width: 50px;
+                height: 50px;
+                font-size: 0.65rem;
+            }
+            
+            .instructions {
+                bottom: 10px;
+                left: 5px;
+                right: 5px;
+                font-size: 0.75rem;
+                padding: 6px 12px;
+            }
+            
+            .game-over {
+                margin: 10px;
+                max-width: calc(100% - 20px);
+                padding: 25px 20px;
+            }
+            
+            .final-score {
+                font-size: 1.5rem;
+            }
+            
+            .leaderboard {
+                max-height: 150px;
+                padding: 12px;
+            }
+            
+            .restart-btn, .share-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+                margin: 6px;
+                width: calc(50% - 12px);
+                display: inline-block;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .header {
+                top: 10px;
+                padding: 8px 15px;
+            }
+            
+            .game-info {
+                top: 80px;
+            }
+            
+            .info-card {
+                padding: 6px 10px;
+            }
+            
+            .instructions {
+                bottom: 10px;
+                font-size: 0.8rem;
+                padding: 6px 15px;
+            }
+            
+            .falling-star {
+                width: 55px;
+                height: 55px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars-bg"></div>
+    
+    <div class="login-screen" id="loginScreen">
+        <h2>⚽ مرحباً بك في لعبة الكرات!</h2>
+        <p>أدخل اسمك لبدء اللعبة وحفظ نقاطك</p>
+        <input type="text" class="login-input" id="playerNameInput" placeholder="اكتب اسمك هنا..." maxlength="20">
+        <button class="start-btn" onclick="startGameWithName()">ابدأ اللعبة 🚀</button>
+    </div>
+    
+    <div class="game-container" id="gameContainer">
+        <div class="header">
+            <h1>⚽ لعبة الكرات المتساقطة</h1>
+            <div class="player-name" id="playerNameDisplay"></div>
+            <p style="font-size: 0.8rem; margin: 5px 0 0 0; color: #667eea;">🎓 صنع بواسطة: الأستاذ بن وارث شرف الدين</p>
+        </div>
+        
+        <div class="game-info">
+            <div class="info-card">
+                <div>النقاط</div>
+                <div class="score" id="score">0</div>
+            </div>
+            
+            <div class="info-card">
+                <div>المطلوب</div>
+                <div class="target-type" id="targetType">👤 اسم شخص</div>
+            </div>
+            
+            <div class="info-card">
+                <div>وقت المستوى</div>
+                <div class="level-timer" id="levelTimer">60</div>
+            </div>
+            
+            <div class="info-card">
+                <div>الوقت الكلي</div>
+                <div class="timer" id="timer">300</div>
+            </div>
+        </div>
+        
+
+        
+        <div class="instructions">
+            اضغط على الكرات المطلوبة فقط! يتغير المطلوب كل 60 ثانية
+        </div>
+        
+        <div class="game-over" id="gameOver">
+            <h2>🎉 انتهت اللعبة!</h2>
+            <div class="final-score" id="finalScore">0</div>
+            <p id="gameMessage">أحسنت! لقد التقطت الكرات بمهارة عالية</p>
+            
+            <div class="leaderboard" id="leaderboard">
+                <h3>🏆 أفضل النقاط</h3>
+                <div id="leaderboardList"></div>
+            </div>
+            
+            <button class="restart-btn" onclick="restartGame()">لعب مرة أخرى 🔄</button>
+            <a href="#" class="share-btn" onclick="shareOnFacebook()">شارك على فيسبوك 📱</a>
+        </div>
+    </div>
+
+    <script>
+        let gameActive = false;
+        let score = 0;
+        let totalTime = 300; // 5 دقائق
+        let timeLeft = totalTime;
+        let levelTime = 60;
+        let levelTimeLeft = levelTime;
+        let gameTimer;
+        let levelTimer;
+        let starTimer;
+        let currentTarget = 0;
+        let playerName = '';
+        
+        // إنشاء أصوات الانفجار باستخدام Web Audio API
+        let audioContext;
+        
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        function playExplosionSound(isCorrect = true) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (isCorrect) {
+                // صوت انفجار إيجابي (نوتات موسيقية صاعدة)
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
+                oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.2);
+            } else {
+                // صوت انفجار سلبي (نوتات هابطة)
+                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.15);
+            }
+            
+            oscillator.type = 'square';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+        
+        const targets = [
+            { type: 'person', name: '👤 اسم شخص', class: 'star-person' },
+            { type: 'animal', name: '🐾 حيوان', class: 'star-animal' },
+            { type: 'plant', name: '🌱 نبات', class: 'star-plant' },
+            { type: 'thing', name: '📦 شيء', class: 'star-thing' },
+            { type: 'country', name: '🏙️ بلد', class: 'star-country' }
+        ];
+        
+        const starData = {
+            person: [
+                'أحمد', 'فاطمة', 'محمد', 'عائشة', 'علي', 'خديجة', 'عمر', 'زينب', 'حسن', 'مريم',
+                'يوسف', 'سارة', 'إبراهيم', 'نور', 'عبدالله', 'هدى', 'خالد', 'ليلى', 'سعد', 'رقية',
+                'طارق', 'أمل', 'ماجد', 'سلمى', 'فيصل', 'دعاء', 'نادر', 'وفاء', 'باسم', 'منى',
+                'كريم', 'ياسمين', 'وليد', 'شيماء', 'عادل', 'إيمان', 'سامي', 'نهى', 'رامي', 'غادة'
+            ],
+            animal: [
+                'أسد', 'نمر', 'فيل', 'زرافة', 'دب', 'ذئب', 'قط', 'كلب', 'حصان', 'جمل',
+                'غزال', 'أرنب', 'فأر', 'قرد', 'دولفين', 'حوت', 'سمك', 'طائر', 'نسر', 'صقر',
+                'ببغاء', 'حمامة', 'ديك', 'دجاجة', 'بطة', 'إوزة', 'تمساح', 'ثعبان', 'سحلية', 'ضفدع',
+                'نحلة', 'فراشة', 'عنكبوت', 'نملة', 'جراد', 'خنفساء', 'عقرب', 'قنديل', 'أخطبوط', 'سلطعون'
+            ],
+            plant: [
+                'وردة', 'نخلة', 'تفاح', 'برتقال', 'موز', 'عنب', 'خيار', 'طماطم', 'جزر', 'بصل',
+                'خس', 'ملفوف', 'فلفل', 'باذنجان', 'كوسا', 'فاصولياء', 'بازلاء', 'ذرة', 'قمح', 'أرز',
+                'شعير', 'عدس', 'حمص', 'فول', 'لوز', 'جوز', 'تين', 'تمر', 'رمان', 'مشمش',
+                'خوخ', 'كرز', 'فراولة', 'أناناس', 'مانجو', 'كيوي', 'أفوكادو', 'جوافة', 'ليمون', 'نعناع'
+            ],
+            thing: [
+                'كتاب', 'قلم', 'طاولة', 'كرسي', 'حاسوب', 'هاتف', 'ساعة', 'مفتاح', 'نظارة', 'حقيبة',
+                'سيارة', 'دراجة', 'طائرة', 'قطار', 'سفينة', 'مظلة', 'مصباح', 'مرآة', 'صورة', 'لوحة',
+                'كرة', 'لعبة', 'دمية', 'كاميرا', 'تلفاز', 'راديو', 'موسيقى', 'آلة', 'مطرقة', 'منشار',
+                'مسطرة', 'مقص', 'صمغ', 'ورق', 'دفتر', 'محفظة', 'خاتم', 'عقد', 'سوار', 'قبعة'
+            ],
+            country: [
+                'مصر', 'السعودية', 'الإمارات', 'الأردن', 'لبنان', 'سوريا', 'العراق', 'المغرب', 'تونس', 'الجزائر',
+                'ليبيا', 'السودان', 'اليمن', 'عمان', 'قطر', 'الكويت', 'البحرين', 'فلسطين', 'الصومال', 'جيبوتي',
+                'موريتانيا', 'تركيا', 'إيران', 'أفغانستان', 'باكستان', 'الهند', 'الصين', 'اليابان', 'كوريا', 'تايلاند',
+                'إندونيسيا', 'ماليزيا', 'أستراليا', 'نيوزيلندا', 'أمريكا', 'كندا', 'البرازيل', 'الأرجنتين', 'فرنسا', 'ألمانيا'
+            ]
+        };
+        
+        function startGameWithName() {
+            const nameInput = document.getElementById('playerNameInput').value.trim();
+            if (!nameInput) {
+                alert('يرجى إدخال اسمك أولاً!');
+                return;
+            }
+            
+            // تفعيل الصوت
+            initAudio();
+            
+            playerName = nameInput;
+            document.getElementById('playerNameDisplay').textContent = `🎮 ${playerName}`;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            
+            startGame();
+        }
+        
+        function startGame() {
+            gameActive = true;
+            score = 0;
+            timeLeft = totalTime;
+            levelTimeLeft = levelTime;
+            currentTarget = 0;
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('levelTimer').textContent = levelTimeLeft;
+            document.getElementById('gameOver').classList.remove('show');
+            
+            updateTarget();
+            
+            // مؤقت اللعبة الكلي
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+            
+            // مؤقت المستوى
+            levelTimer = setInterval(() => {
+                levelTimeLeft--;
+                document.getElementById('levelTimer').textContent = levelTimeLeft;
+                
+                if (levelTimeLeft <= 0) {
+                    // الانتقال للمستوى التالي
+                    currentTarget = (currentTarget + 1) % targets.length;
+                    updateTarget();
+                    levelTimeLeft = levelTime;
+                }
+            }, 1000);
+            
+            // إنشاء النجوم
+            starTimer = setInterval(createStar, 1200);
+            
+            // إزالة النجوم الموجودة
+            document.querySelectorAll('.falling-star').forEach(star => star.remove());
+        }
+        
+        function updateTarget() {
+            const target = targets[currentTarget];
+            document.getElementById('targetType').textContent = target.name;
+        }
+        
+        function createStar() {
+            if (!gameActive) return;
+            
+            const star = document.createElement('div');
+            star.className = 'falling-star';
+            
+            // اختيار نوع عشوائي
+            const types = Object.keys(starData);
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            const randomWord = starData[randomType][Math.floor(Math.random() * starData[randomType].length)];
+            
+            star.textContent = randomWord;
+            star.dataset.type = randomType;
+            
+            // إضافة الكلاس المناسب
+            const targetClass = targets.find(t => t.type === randomType)?.class || 'star-person';
+            star.classList.add(targetClass);
+            
+            // موضع عشوائي
+            star.style.left = Math.random() * (window.innerWidth - 70) + 'px';
+            star.style.animationDuration = (Math.random() * 2 + 3) + 's';
+            
+            document.querySelector('.game-container').appendChild(star);
+            
+            // إضافة حدث النقر
+            star.addEventListener('click', () => catchStar(star));
+            
+            // إزالة النجم بعد السقوط
+            setTimeout(() => {
+                if (star.parentNode) {
+                    star.remove();
+                }
+            }, 6000);
+        }
+        
+        function catchStar(star) {
+            if (!gameActive) return;
+            
+            const starType = star.dataset.type;
+            const currentTargetType = targets[currentTarget].type;
+            
+            const rect = star.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            
+            if (starType === currentTargetType) {
+                // إجابة صحيحة
+                score += 15;
+                createExplosion(x, y, 'correct');
+                playExplosionSound(true);
+            } else {
+                // إجابة خاطئة
+                score = Math.max(0, score - 8);
+                createExplosion(x, y, 'incorrect');
+                playExplosionSound(false);
+            }
+            
+            document.getElementById('score').textContent = score;
+            star.remove();
+        }
+        
+        function createExplosion(x, y, type) {
+            const explosion = document.createElement('div');
+            explosion.className = `explosion ${type}`;
+            explosion.style.left = (x - 60) + 'px';
+            explosion.style.top = (y - 60) + 'px';
+            
+            document.querySelector('.game-container').appendChild(explosion);
+            
+            setTimeout(() => {
+                explosion.remove();
+            }, 600);
+        }
+        
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            clearInterval(levelTimer);
+            clearInterval(starTimer);
+            
+            // حفظ النتيجة
+            saveScore(playerName, score);
+            
+            document.getElementById('finalScore').textContent = score + ' نقطة';
+            
+            // رسالة حسب النتيجة
+            let message = '';
+            if (score >= 500) message = '🏆 ممتاز! أنت بطل حقيقي!';
+            else if (score >= 300) message = '🥇 رائع جداً! أداء مميز!';
+            else if (score >= 200) message = '🥈 جيد جداً! استمر في التحسن!';
+            else if (score >= 100) message = '🥉 جيد! يمكنك تحسين أدائك!';
+            else message = '💪 لا بأس! جرب مرة أخرى وستتحسن!';
+            
+            document.getElementById('gameMessage').textContent = message;
+            
+            // عرض لوحة المتصدرين
+            displayLeaderboard();
+            
+            document.getElementById('gameOver').classList.add('show');
+            
+            // إزالة النجوم المتبقية
+            document.querySelectorAll('.falling-star').forEach(star => star.remove());
+        }
+        
+        function saveScore(name, score) {
+            let scores = JSON.parse(localStorage.getItem('starGameScores') || '[]');
+            
+            // البحث عن اللاعب الموجود
+            const existingPlayerIndex = scores.findIndex(s => s.name === name);
+            
+            if (existingPlayerIndex !== -1) {
+                // تحديث أفضل نتيجة إذا كانت أعلى
+                if (score > scores[existingPlayerIndex].score) {
+                    scores[existingPlayerIndex].score = score;
+                    scores[existingPlayerIndex].date = new Date().toLocaleDateString('ar');
+                }
+            } else {
+                // إضافة لاعب جديد
+                scores.push({
+                    name: name,
+                    score: score,
+                    date: new Date().toLocaleDateString('ar')
+                });
+            }
+            
+            // ترتيب حسب النقاط
+            scores.sort((a, b) => b.score - a.score);
+            
+            // الاحتفاظ بأفضل 10 نتائج فقط
+            scores = scores.slice(0, 10);
+            
+            localStorage.setItem('starGameScores', JSON.stringify(scores));
+        }
+        
+
+        
+        function displayLeaderboard() {
+            const scores = JSON.parse(localStorage.getItem('starGameScores') || '[]');
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            if (scores.length === 0) {
+                leaderboardList.innerHTML = '<div style="text-align: center; color: #6c757d;">لا توجد نتائج محفوظة</div>';
+                return;
+            }
+            
+            leaderboardList.innerHTML = '';
+            scores.forEach((score, index) => {
+                const item = document.createElement('div');
+                item.className = 'leader-item';
+                
+                let medal = '';
+                if (index === 0) medal = '🥇';
+                else if (index === 1) medal = '🥈';
+                else if (index === 2) medal = '🥉';
+                else medal = `${index + 1}.`;
+                
+                const isCurrentPlayer = score.name === playerName;
+                const style = isCurrentPlayer ? 'font-weight: bold; color: #667eea;' : '';
+                
+                item.innerHTML = `
+                    <span style="${style}">${medal} ${score.name}</span>
+                    <span style="${style}">${score.score} نقطة</span>
+                `;
+                
+                leaderboardList.appendChild(item);
+            });
+        }
+        
+        function restartGame() {
+            document.getElementById('gameOver').classList.remove('show');
+            startGame();
+        }
+        
+        function shareOnFacebook() {
+            const scores = JSON.parse(localStorage.getItem('starGameScores') || '[]');
+            const playerRank = scores.findIndex(s => s.name === playerName) + 1;
+            const rankText = playerRank > 0 ? ` (المركز ${playerRank})` : '';
+            
+            const shareText = `⚽ لعبت لعبة الكرات المتساقطة لأنواع الأسماء!\n👤 اللاعب: ${playerName}\n📊 النقاط: ${score}${rankText}\n\n🎮 لعبة تعليمية ممتعة لتعلم أنواع الأسماء\n🔥 تحداني وجرب اللعبة بنفسك!`;
+            
+            const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`;
+            window.open(shareUrl, '_blank', 'width=600,height=400');
+        }
+        
+        // السماح بالضغط على Enter لبدء اللعبة
+        document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                startGameWithName();
+            }
+        });
+        
+        // منع التمرير على الهواتف
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // التركيز على حقل الاسم عند تحميل الصفحة
+        window.onload = function() {
+            document.getElementById('playerNameInput').focus();
+        };
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'988cad5d01f4337b',t:'MTc1OTQ5NzAwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
