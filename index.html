@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>لعبة الكرات المتساقطة - أنواع الأسماء</title>
     <style>
         body {
@@ -14,6 +14,13 @@
             min-height: 100vh;
             overflow: hidden;
             position: relative;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .stars-bg {
@@ -84,9 +91,10 @@
             cursor: pointer;
             transition: all 0.3s;
             width: 100%;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        .start-btn:hover {
+        .start-btn:hover, .start-btn:active {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
         }
@@ -136,8 +144,6 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-        
-
         
         .info-card {
             background: rgba(255, 255, 255, 0.9);
@@ -195,9 +201,11 @@
             box-shadow: 0 0 15px rgba(255,255,255,0.3);
             animation: fall linear;
             z-index: 10;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
         
-        .falling-star:hover {
+        .falling-star:hover, .falling-star:active {
             transform: scale(1.1);
         }
         
@@ -290,9 +298,10 @@
             cursor: pointer;
             transition: all 0.3s;
             margin: 10px;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        .restart-btn:hover {
+        .restart-btn:hover, .restart-btn:active {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
         }
@@ -309,9 +318,10 @@
             margin: 10px;
             text-decoration: none;
             display: inline-block;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        .share-btn:hover {
+        .share-btn:hover, .share-btn:active {
             background: #166fe5;
             transform: translateY(-2px);
         }
@@ -603,10 +613,8 @@
             </div>
         </div>
         
-
-        
         <div class="instructions">
-            اضغط على الكرات المطلوبة فقط! يتغير المطلوب كل 60 ثانية
+            المس الكرات المطلوبة فقط! يتغير المطلوب كل 60 ثانية
         </div>
         
         <div class="game-over" id="gameOver">
@@ -807,8 +815,24 @@
             
             document.querySelector('.game-container').appendChild(star);
             
-            // إضافة حدث النقر
-            star.addEventListener('click', () => catchStar(star));
+            // إضافة أحداث اللمس والنقر - لمسة واحدة فقط
+            let touched = false;
+            
+            star.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (!touched) {
+                    touched = true;
+                    catchStar(star);
+                }
+            }, { passive: false });
+            
+            star.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (!touched) {
+                    touched = true;
+                    catchStar(star);
+                }
+            });
             
             // إزالة النجم بعد السقوط
             setTimeout(() => {
@@ -819,7 +843,7 @@
         }
         
         function catchStar(star) {
-            if (!gameActive) return;
+            if (!gameActive || !star.parentNode) return;
             
             const starType = star.dataset.type;
             const currentTargetType = targets[currentTarget].type;
@@ -917,8 +941,6 @@
             localStorage.setItem('starGameScores', JSON.stringify(scores));
         }
         
-
-        
         function displayLeaderboard() {
             const scores = JSON.parse(localStorage.getItem('starGameScores') || '[]');
             const leaderboardList = document.getElementById('leaderboardList');
@@ -974,15 +996,31 @@
             }
         });
         
-        // منع التمرير على الهواتف
+        // منع التمرير والتكبير على الهواتف
         document.addEventListener('touchmove', (e) => {
             e.preventDefault();
         }, { passive: false });
+        
+        // منع التكبير بالضغط المزدوج
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
         
         // التركيز على حقل الاسم عند تحميل الصفحة
         window.onload = function() {
             document.getElementById('playerNameInput').focus();
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'988cad5d01f4337b',t:'MTc1OTQ5NzAwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'988cbf18a3ef337b',t:'MTc1OTQ5NzcyNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
